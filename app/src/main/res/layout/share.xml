@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical"
+
+    >
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@mipmap/share_top_bg">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="分享到"
+            android:textColor="#fff"
+            android:textSize="20sp" />
+    </RelativeLayout>
+    <!--图标和文字-->
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#fff"
+        android:padding="10sp">
+
+        <ImageView
+            android:id="@+id/share_wx"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/share_wx_bg"
+            android:clickable="true"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/share_qq"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/share_qq"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/share_wx"
+            android:background="@drawable/share_qq_bg"
+            android:clickable="true"
+            app:layout_constraintLeft_toRightOf="@+id/share_wx"
+            app:layout_constraintRight_toLeftOf="@id/share_wx_cicle"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/share_wx_cicle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/share_qq"
+            android:background="@drawable/share_wx_circle_bg"
+            android:clickable="true"
+            app:layout_constraintLeft_toRightOf="@+id/share_qq"
+            app:layout_constraintRight_toLeftOf="@id/share_qq_zone"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/share_qq_zone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/share_wx_cicle"
+            android:background="@drawable/share_qqzone_bg"
+            android:clickable="true"
+            app:layout_constraintLeft_toRightOf="@id/share_wx_cicle"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/wxt"
+            android:layout_width="60sp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="微信"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/qqt"
+            app:layout_constraintTop_toBottomOf="@+id/share_wx" />
+
+        <TextView
+            android:id="@+id/qqt"
+            android:layout_width="60sp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="QQ"
+            app:layout_constraintLeft_toRightOf="@id/wxt"
+            app:layout_constraintRight_toLeftOf="@+id/wxct"
+            app:layout_constraintTop_toBottomOf="@id/share_qq" />
+
+        <TextView
+            android:id="@+id/wxct"
+            android:layout_width="60sp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="朋友圈"
+            app:layout_constraintLeft_toRightOf="@+id/qqt"
+            app:layout_constraintRight_toLeftOf="@id/qqzt"
+            app:layout_constraintTop_toBottomOf="@+id/share_wx_cicle" />
+
+        <TextView
+            android:id="@+id/qqzt"
+            android:layout_width="60sp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="QQ空间"
+            app:layout_constraintLeft_toRightOf="@+id/wxct"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/share_qq_zone" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1sp"
+        android:background="#e6e6e6" />
+    <!--    取消-->
+
+    <TextView
+        android:id="@+id/cancle_share"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/dialog_textview_white_bg"
+        android:gravity="center"
+        android:padding="10sp"
+        android:text="取消"
+        android:textColor="#000"
+        android:textSize="20sp"
+        tools:targetApi="lollipop" />
+
+
+</LinearLayout>
