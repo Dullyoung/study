@@ -27,7 +27,7 @@
             android:id="@+id/pay_main"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:clickable="true"
+
             android:onClick="PayIn"
             android:src="@mipmap/main_center" />
 
@@ -37,38 +37,46 @@
             android:layout_height="wrap_content"
             android:layout_toLeftOf="@+id/setting"
             android:layout_toRightOf="@+id/pay_main"
-            android:gravity="center">
+            android:gravity="center"
+            android:layout_toStartOf="@+id/setting"
+            android:layout_toEndOf="@+id/pay_main">
 
             <ImageView
                 android:id="@+id/index"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:clickable="true"
+
                 android:src="@mipmap/main_index_selected" />
 
             <ImageView
                 android:id="@+id/learn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:clickable="true"
+
                 android:paddingLeft="5dp"
-                app:srcCompat="@mipmap/main_learn" />
+                app:srcCompat="@mipmap/main_learn"
+                android:paddingStart="5dp" />
 
             <ImageView
                 android:id="@+id/read_to_me"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:clickable="true"
+
                 android:paddingLeft="5dp"
-                app:srcCompat="@mipmap/main_read_to_me" />
+                app:srcCompat="@mipmap/main_read_to_me"
+                android:paddingStart="5dp"
+                tools:ignore="RtlSymmetry" />
 
             <ImageView
                 android:id="@+id/phonics"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:clickable="true"
+
                 android:paddingLeft="5dp"
-                app:srcCompat="@mipmap/main_phonics" />
+                app:srcCompat="@mipmap/main_phonics"
+
+                android:paddingStart="5dp"
+                tools:ignore="RtlSymmetry" />
 
 
             <TextView
@@ -86,7 +94,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toLeftOf="@+id/share"
-            android:background="@drawable/setting"></ImageView>
+            android:background="@drawable/setting"
+            android:layout_toStartOf="@+id/share" />
 
         <ImageView
             android:id="@+id/share"
@@ -95,7 +104,7 @@
             android:layout_alignParentRight="true"
             android:background="@drawable/share_bg"
 
-            />
+            android:layout_alignParentEnd="true" />
 
 
     </RelativeLayout>
@@ -114,7 +123,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_centerInParent="true"
-            android:overScrollMode="never"></com.example.study.view.widget.MyViewPager>
+            android:overScrollMode="never" />
 
         <RelativeLayout
             android:id="@+id/setting_layout"
@@ -137,7 +146,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/sys_version"
                     android:textColor="#FECE37"
-                    android:textSize="18sp"></TextView>
+                    android:textSize="18sp" />
 
                 <TextView
                     android:id="@+id/sys_version"
@@ -145,7 +154,8 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
                     android:textColor="#FECE37"
-                    android:textSize="18sp"></TextView>
+                    android:textSize="18sp"
+                    android:layout_alignParentEnd="true" />
 
             </RelativeLayout>
 
@@ -164,7 +174,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/cache_size"
                     android:textColor="#FECE37"
-                    android:textSize="18sp"></TextView>
+                    android:textSize="18sp" />
 
                 <TextView
                     android:id="@+id/cache_size"
@@ -172,7 +182,8 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
                     android:textColor="#FECE37"
-                    android:textSize="18sp"></TextView>
+                    android:textSize="18sp"
+                    android:layout_alignParentEnd="true" />
 
             </RelativeLayout>
 

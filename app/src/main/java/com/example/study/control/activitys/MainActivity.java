@@ -118,7 +118,9 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setFullScreenMode();
+        // setFullScreenMode();
+        // setFullScreen();
+        hideSystemUI();
         //将imageview与对应的图片通过id绑定
         layoutInflater = LayoutInflater.from(this);//获取layout inflater实例
         h5page = findViewById(R.id.h5page);
@@ -128,8 +130,53 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         init();//主界面滑动
     }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            hideSystemUI();
+        }
+    }
+
+    private void hideSystemUI() {
+        // Enables regular immersive mode.
+        // For "lean back" mode, remove SYSTEM_UI_FLAG_IMMERSIVE.
+        // Or for "sticky immersive," replace it with SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_IMMERSIVE
+                        // Set the content to appear under the system bars so that the
+                        // content doesn't resize when the system bars hide and show.
+                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        // Hide the nav bar and status bar
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN);
+    }
+
+    private void setFullScreen() {
+        Window window = getWindow();
+        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS); //设置状态栏以透明背景绘制
+        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS); //设置沉浸式状态栏  不设置这个弹出dialog的时候Activity窗口会向下挪出状态栏的距离
+        window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+
+        window.getDecorView().setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+            @Override
+            public void onSystemUiVisibilityChange(int visibility) {
+                if (window.getDecorView().getSystemUiVisibility() != View.SYSTEM_UI_FLAG_FULLSCREEN) {
+
+                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
+                }
+
+
+            }
+        });
+    }
+
     //在activity的onCreate方法中先调用此方法在setContent进行实现全屏模式
-    private void setFullScreenMode(){
+    private void setFullScreenMode() {
         //设置永不休眠模式
         Window window = this.getWindow();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
@@ -153,24 +200,25 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
                 window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS); //设置状态栏以透明背景绘制
                 window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS); //设置沉浸式状态栏  不设置这个弹出dialog的时候Activity窗口会向下挪出状态栏的距离
                 window.setStatusBarColor(Color.TRANSPARENT);//设置状态栏背景透明
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     try {
                         Class decorViewClazz = Class.forName("com.android.internal.policy.DecorView");
                         Field field = decorViewClazz.getDeclaredField("mSemiTransparentStatusBarColor");
                         field.setAccessible(true);
                         field.setInt(getWindow().getDecorView(), Color.TRANSPARENT);  //去掉高版本蒙层改为透明
-                    } catch (Exception e) {}
+                    } catch (Exception e) {
+                    }
                 }
             }
         }
 
         decorView.setOnSystemUiVisibilityChangeListener(visibility -> { //当系统UI发生变化时 如果不是全屏并且隐藏的 就切换成全屏切隐藏
             View decorView1 = getWindow().getDecorView();
-            int uiState= decorView1.getSystemUiVisibility();
+            int uiState = decorView1.getSystemUiVisibility();
             if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) {
-                if(uiState!=View.GONE) decorView1.setSystemUiVisibility(View.GONE);
+                if (uiState != View.GONE) decorView1.setSystemUiVisibility(View.GONE);
             } else if (Build.VERSION.SDK_INT >= 19) {
-                if(uiState!=(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                if (uiState != (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                         | View.SYSTEM_UI_FLAG_FULLSCREEN))
                     decorView1.setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
@@ -179,7 +227,6 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
             }
         });
     }
-
 
 
     //H5界面数据获取
@@ -246,6 +293,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     }
 
     String TAG = "aaaa";
+
     //检查系统版本是不是最新
     private void CheckVersion() {
         String uri;
@@ -272,6 +320,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
             e.printStackTrace();
         }
     }
+
     CacheTipDialog cacheTipDialog;
 
     //缓存显示和系统版本显示
@@ -285,7 +334,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         findViewById(R.id.cache_info).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (cacheTipDialog==null){
+                if (cacheTipDialog == null) {
                     cacheTipDialog = new CacheTipDialog(MainActivity.this);
                     cacheTipDialog.setOnButtonClickListener(new CacheTipDialog.OnButtonClickListener() {
                         @Override
@@ -317,13 +366,13 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     public void SetView() {
         cache_size = findViewById(R.id.cache_size);
         sys_version = findViewById(R.id.sys_version);
-        images = new ArrayList<ImageView>(); //创建动态数组存ImageView 的对象
-        images.add((ImageView) findViewById(R.id.index));
-        images.add((ImageView) findViewById(R.id.learn));
-        images.add((ImageView) findViewById(R.id.read_to_me));
-        images.add((ImageView) findViewById(R.id.phonics));
-        images.add((ImageView) findViewById(R.id.pay_main));
-        images.add((ImageView) findViewById(R.id.share));
+        images = new ArrayList<>(); //创建动态数组存ImageView 的对象
+        images.add(findViewById(R.id.index));
+        images.add(findViewById(R.id.learn));
+        images.add(findViewById(R.id.read_to_me));
+        images.add(findViewById(R.id.phonics));
+        images.add(findViewById(R.id.pay_main));
+        images.add(findViewById(R.id.share));
         setting = findViewById(R.id.setting);
 
         setSystemAndCache();
@@ -599,5 +648,6 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         Request request = new Request.Builder().url(url).post(requestBody).build();
         client.newCall(request).enqueue(callback);
     }
+
     private static final MediaType JSON1 = MediaType.parse("application/json; charset=utf-8");
 }
