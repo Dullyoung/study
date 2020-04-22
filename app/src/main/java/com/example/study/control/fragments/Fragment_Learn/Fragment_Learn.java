@@ -8,6 +8,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager.widget.ViewPager;
 
 import android.util.Log;
@@ -17,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
@@ -66,7 +68,7 @@ public class Fragment_Learn extends Fragment implements View.OnClickListener, Vi
     private List<Fragment_Learn_Child> fragmentList;
     private MediaPlayer learnmediaPlayer;
     private View rootView;
-
+    SwipeRefreshLayout refreshLayout;
     private Fragment_Read_To_Me fragment_read_to_me;
 
     public Fragment_Learn() {
@@ -89,6 +91,11 @@ public class Fragment_Learn extends Fragment implements View.OnClickListener, Vi
         }
         learnviewpager = rootView.findViewById(R.id.vp_learn);//把vp绑定到learn 里的viewpager
         EventBus.getDefault().register(this);
+        refreshLayout=rootView.findViewById(R.id.refresh);
+        refreshLayout.setOnRefreshListener(() -> {
+            fragmentList = new ArrayList<>();
+            getData();
+        });
 
         fragmentList = new ArrayList<>();
         getData();
@@ -97,6 +104,7 @@ public class Fragment_Learn extends Fragment implements View.OnClickListener, Vi
 
 
     private void getData() {
+
         if (new File(dir, "LearnJson").exists()) {
             String ResultLocal = readTextFile("LearnJson");//本地获取到的Json数据
             Type type = new TypeReference<ResultInfo<LearnInfoWrapper>>() {
@@ -112,18 +120,20 @@ public class Fragment_Learn extends Fragment implements View.OnClickListener, Vi
             learnviewpager.setAdapter(learn_fragAdapter);
             learnviewpager.setOffscreenPageLimit(1);
             learnviewpager.setCurrentItem(0);
+            refreshLayout.setRefreshing(false);
 
         } else {
             LearnEngin engin = new LearnEngin(getContext());
             engin.getLearnInfo().subscribe(new Observer<ResultInfo<LearnInfoWrapper>>() {
                 @Override
                 public void onCompleted() {
-
+                    refreshLayout.setRefreshing(false);
                 }
 
                 @Override
                 public void onError(Throwable e) {
-
+                    Toast.makeText(getContext(), "获取数据失败", Toast.LENGTH_SHORT).show();
+                    refreshLayout.setRefreshing(false);
                 }
 
                 @Override
@@ -163,7 +173,10 @@ public class Fragment_Learn extends Fragment implements View.OnClickListener, Vi
     }
 
     public void setPage() {
-        page.setText((learnviewpager.getCurrentItem() + 1) + "/" + learn_fragAdapter.getCount());
+            if (learn_fragAdapter!=null&&learn_fragAdapter!=null){
+                page.setText((learnviewpager.getCurrentItem() + 1) + "/" + learn_fragAdapter.getCount());
+            }
+
     }
 
 
@@ -217,6 +230,7 @@ public class Fragment_Learn extends Fragment implements View.OnClickListener, Vi
             learnviewpager.setCurrentItem(pageChanger.getPosition());
         }
     }
+
 
     @Override
     public void onDestroyView() {

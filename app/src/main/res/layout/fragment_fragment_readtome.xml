@@ -6,7 +6,10 @@
     tools:context=".control.fragments.Fragment_Read_To_Me.Fragment_Read_To_Me">
 
     <!-- TODO: Update blank fragment layout -->
-
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    android:layout_width="match_parent"
+    android:id="@+id/refresh"
+    android:layout_height="match_parent">
     <RelativeLayout
         android:id="@+id/readtomexml"
         android:layout_width="wrap_content"
@@ -167,5 +170,5 @@
 
 
     </RelativeLayout>
-
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </FrameLayout>

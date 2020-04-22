@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager.widget.ViewPager;
 
 import android.os.Environment;
@@ -73,6 +74,7 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
     private TextView repeat_text ;
     LinearLayout tip_layout;
     private ResultInfo<LearnInfoWrapper> jsonData;
+    SwipeRefreshLayout refreshLayout;
     View rootView;
     int time=0;
     String VoicePath=Environment.getExternalStorageDirectory().getPath()+"/Android/data/com.example.study/cache/record";
@@ -126,6 +128,10 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
         next.setOnClickListener(this);
         playbtn.setOnClickListener(this);
         assetManager = getActivity().getAssets();
+
+        refreshLayout=rootView.findViewById(R.id.refresh);
+        refreshLayout.setOnRefreshListener(() -> getData());
+
         if (new File(dir, "LearnJson").exists()) {
             String ResultLocal = readTextFile("LearnJson");//本地获取到的Json数据
             Type type = new TypeReference<ResultInfo<LearnInfoWrapper>>() {
@@ -137,8 +143,9 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
             imgvp.setCurrentItem(0);
             imgvp.setOffscreenPageLimit(1);
             imgvp.addOnPageChangeListener(Fragment_Read_To_Me.this);
+            refreshLayout.setRefreshing(false);
         } else {
-            getNetData();//获取网络数据
+            getData();//获取网络数据
         }
 
         return rootView;
@@ -146,17 +153,18 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
 
 
 
-    public void getNetData() {
+    public void getData() {
         learnEngin = new LearnEngin(getActivity());
         learnEngin.getLearnInfo().subscribe(new Observer<ResultInfo<LearnInfoWrapper>>() {
             @Override
             public void onCompleted() {
-
+                refreshLayout.setRefreshing(false);
             }
 
             @Override
             public void onError(Throwable e) {
-
+                Toast.makeText(getContext(), "获取数据失败", Toast.LENGTH_SHORT).show();
+                refreshLayout.setRefreshing(false);
             }
 
             @Override
@@ -169,6 +177,7 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
                     imgvp.setCurrentItem(0);
                     imgvp.setOffscreenPageLimit(1);
                     imgvp.addOnPageChangeListener(Fragment_Read_To_Me.this);
+                    refreshLayout.setRefreshing(false);
                 }
             }
         });
@@ -509,6 +518,7 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
         if (s.equals("stopMusic")||s.equals("stopVoice")){
             ReleaseAll();
         }
+
     }
     @Override
     public void onDestroyView() {
