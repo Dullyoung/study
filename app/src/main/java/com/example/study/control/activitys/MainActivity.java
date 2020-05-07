@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ContentValues;
@@ -93,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     private FragAdapter adapter;
     private MyViewPager viewPager;
     private RelativeLayout relativeLayout;
-    private List<Fragment> main_fragments;
+
     ImageView setting;
     TextView h5page;
     TextView cache_size, sys_version;
@@ -101,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     String versionData;
     int SUCCESS = 666;
     int FAILED = 888;
+    @SuppressLint("HandlerLeak")
     Handler handler = new Handler() {
         @Override
         public void handleMessage(@NonNull Message msg) {
@@ -479,12 +481,8 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     private void init() {
         viewPager = findViewById(R.id.viewpager);
-        main_fragments = new ArrayList<Fragment>();
-        main_fragments.add(new Fragment_Main_Index());
-        main_fragments.add(new Fragment_Learn());
-        main_fragments.add(new Fragment_Read_To_Me());
-        main_fragments.add(new Fragment_Phonics());
-        adapter = new FragAdapter(getSupportFragmentManager(), FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT, main_fragments);
+
+        adapter = new FragAdapter(getSupportFragmentManager(), FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         viewPager.setAdapter(adapter);//设置自定义的adapter适配器
         viewPager.setCurrentItem(curindex);//设置默认页码
         viewPager.setOffscreenPageLimit(4);//设置最大缓冲页数
@@ -530,7 +528,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void getMessage(String s) { //跟我读界面的权限请求 因为请求权限弹窗只能拿到activity里来进行
-        if (s.equals("permission")) {
+        if (s.equals("permission")){
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 1);
         }
     }
@@ -627,24 +625,28 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
                     @Override
                     public void onFailure(Call call, IOException e) {
                         handler.sendEmptyMessage(FAILED);
+
                     }
 
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
                         //response用过一次之后流就会关闭 再次调用就会报状态异常的错误
+
                         versionData = response.body().string();
                         handler.sendEmptyMessage(SUCCESS);
                     }
                 });
             }
         }).start();
+
         return versionData;
     }
 
     //带回调 对获取成功和失败有监控
-    public static void sendRequestWithOkhttp(String url, okhttp3.Callback callback) {
+    public  void sendRequestWithOkhttp(String url, okhttp3.Callback callback) {
         RequestBody requestBody = RequestBody.create(JSON1, JSONObject.toJSON("{\"name\":\"admin\",\"psw\":\"admin\"}").toString());
         OkHttpClient client = new OkHttpClient();
+
         Request request = new Request.Builder().url(url).post(requestBody).build();
         client.newCall(request).enqueue(callback);
     }

@@ -65,39 +65,41 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
     private int position;
     private TextView textView;//页码
     private ProgressBar progress;
-    private ImageView last, next, playbtn,tip_img;//各种按钮
+    private ImageView last, next, playbtn, tip_img;//各种按钮
     private LearnEngin learnEngin;
     private AssetManager assetManager;
     private MediaPlayer tip, first, repeat, recordPlayer;
     private MediaRecorder mediaRecorder;
     private int repeat_count = 0;
-    private TextView repeat_text ;
+    private TextView repeat_text;
     LinearLayout tip_layout;
     private ResultInfo<LearnInfoWrapper> jsonData;
     SwipeRefreshLayout refreshLayout;
     View rootView;
-    int time=0;
-    String VoicePath=Environment.getExternalStorageDirectory().getPath()+"/Android/data/com.example.study/cache/record";
+    int time = 0;
+    String VoicePath = Environment.getExternalStorageDirectory().getPath() + "/Android/data/com.example.study/cache/record";
+
     public Fragment_Read_To_Me() {
 
         // Required empty public constructor
     }
-    private Handler handler=new Handler(){
+
+    private Handler handler = new Handler() {
         @Override
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
-            if (msg.what==1){
+            if (msg.what == 1) {
                 tip_layout.setVisibility(View.VISIBLE);
-                progress.setProgress(100*(3-time)/3);
+                progress.setProgress(100 * (3 - time) / 3);
                 time++;
-                if (time==4){
+                if (time == 4) {
                     tip_layout.setVisibility(View.GONE);
-                    time=0;
+                    time = 0;
                     return;
                 }
-                handler.sendEmptyMessageDelayed(1,1000);
+                handler.sendEmptyMessageDelayed(1, 1000);
             }
-            if (msg.what==2){
+            if (msg.what == 2) {
                 //隐藏倒计时
                 tip_layout.setVisibility(View.GONE);
             }
@@ -114,14 +116,14 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
         EventBus.getDefault().register(this);
         last = rootView.findViewById(R.id.lastbtn);
         next = rootView.findViewById(R.id.nextbtn);
-        tip_layout=rootView.findViewById(R.id.tip_text);
+        tip_layout = rootView.findViewById(R.id.tip_text);
         playbtn = rootView.findViewById(R.id.playbtn);
-        progress=rootView.findViewById(R.id.progress_bar);
+        progress = rootView.findViewById(R.id.progress_bar);
         playbtn.setBackgroundResource(R.mipmap.read_stop_normal_icon);
         imgvp = rootView.findViewById(R.id.imgvp);
         textView = rootView.findViewById(R.id.pageshow);
         repeat_text = rootView.findViewById(R.id.repeat_count);
-        tip_img=rootView.findViewById(R.id.tip_img);
+        tip_img = rootView.findViewById(R.id.tip_img);
         tip_img.setBackgroundResource(R.mipmap.splash_bg1);
         repeat_text.setText("跟读进度:" + repeat_count + "/" + "3");
         last.setOnClickListener(this);
@@ -129,16 +131,22 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
         playbtn.setOnClickListener(this);
         assetManager = getActivity().getAssets();
 
-        refreshLayout=rootView.findViewById(R.id.refresh);
-        refreshLayout.setOnRefreshListener(() -> getData());
+        refreshLayout = rootView.findViewById(R.id.refresh);
+        refreshLayout.setOnRefreshListener(() -> getLocalData());
 
+        getLocalData();
+
+        return rootView;
+    }
+
+    public void getLocalData() {
         if (new File(dir, "LearnJson").exists()) {
             String ResultLocal = readTextFile("LearnJson");//本地获取到的Json数据
             Type type = new TypeReference<ResultInfo<LearnInfoWrapper>>() {
             }.getType();
             ResultInfo<LearnInfoWrapper> json = com.alibaba.fastjson.JSONObject.parseObject(ResultLocal, type);
             jsonData = json;
-            fragAdapter = new ReadToMeAdapter(getChildFragmentManager(), FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT,json);//获取适配器
+            fragAdapter = new ReadToMeAdapter(getChildFragmentManager(), FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT, json);//获取适配器
             imgvp.setAdapter(fragAdapter);//设置适配器
             imgvp.setCurrentItem(0);
             imgvp.setOffscreenPageLimit(1);
@@ -147,10 +155,7 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
         } else {
             getData();//获取网络数据
         }
-
-        return rootView;
     }
-
 
 
     public void getData() {
@@ -198,19 +203,19 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
             case R.id.playbtn:
                 //每次点击的时候检查一下权限 如果没有录音权限 就post一个消息到activity里弹窗，
                 // 在fragment里弹窗不会显示，Fragment没有windowsManager对象不能操作弹窗
-                if (ContextCompat.checkSelfPermission(getActivity(),Manifest.permission.RECORD_AUDIO )== PackageManager.PERMISSION_GRANTED){
+                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
                     if (playing) {
                         playing = false;
                         handler.sendEmptyMessage(2);
                         tip_img.setBackgroundResource(R.mipmap.splash_bg1);
                         ReleaseAll();
                     } else {
-                       playbtn.setBackgroundResource(R.drawable.play_btn_bg);
+                        playbtn.setBackgroundResource(R.drawable.play_btn_bg);
                         StartPlay();
                         repeat_count = 0;
                         playing = true;
                     }
-                }else {
+                } else {
                     EventBus.getDefault().post("permission");
                 }
                 break;
@@ -245,10 +250,10 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
             recordPlayer.release();
             recordPlayer = null;
         }
-        if (standardVoice!=null){
+        if (standardVoice != null) {
             standardVoice.stop();
             standardVoice.release();
-            standardVoice=null;
+            standardVoice = null;
         }
         repeat_count = 0;
         repeat_text.setText("跟读进度:" + repeat_count + "/3");
@@ -303,7 +308,7 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
         if (!file.exists()) {
             file.mkdirs();
         }
-        mediaRecorder.setOutputFile(VoicePath+"/voice.3gp");
+        mediaRecorder.setOutputFile(VoicePath + "/voice.3gp");
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
         try {
@@ -318,12 +323,11 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
     }
 
 
-
     //播放用户的录音
     private void StartRecordPlayer() {
         recordPlayer = new MediaPlayer();
         try {
-            recordPlayer.setDataSource( VoicePath+"/voice.3gp");
+            recordPlayer.setDataSource(VoicePath + "/voice.3gp");
             recordPlayer.prepare();
             recordPlayer.start();
             recordPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -334,7 +338,7 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
                         repeat.start();
                         playbtn.setBackgroundResource(R.drawable.play_btn_bg);
                     }
-                //第三次结束。
+                    //第三次结束。
                     if (repeat_count == 3) {
                         repeat_count = 0;
                         playing = false;
@@ -392,7 +396,7 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
                         //隐藏文字提示
                         tip_img.setBackgroundResource(R.mipmap.splash_bg1);
 
-                         //播放录音文件
+                        //播放录音文件
                         StartRecordPlayer();
                     }
                 }, 3000);//延时三秒后停止录制 释放录音机
@@ -423,7 +427,7 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
 
         @Override
         public String generate(String url) {
-            return "/voice/"+jsonData.getData().getLearnInfoList().get(imgvp.getCurrentItem()).getId() + ".mp3";
+            return "/voice/" + jsonData.getData().getLearnInfoList().get(imgvp.getCurrentItem()).getId() + ".mp3";
         }
     }
 
@@ -458,7 +462,7 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
                 tip.start();//提示音之后就是播放用户录音
             }
         });
-       }
+    }
 
     private void Last(View view, int position) {
         imgvp.setCurrentItem(curindex);
@@ -498,7 +502,7 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
 
     @Override
     public void onPageSelected(int position) {
-        playing=false;
+        playing = false;
         EventBus.getDefault().post(new PageChanger("read", position));
     }
 
@@ -514,12 +518,13 @@ public class Fragment_Read_To_Me extends Fragment implements View.OnClickListene
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void getMessage(String s){
-        if (s.equals("stopMusic")||s.equals("stopVoice")){
+    public void getMessage(String s) {
+        if (s.equals("stopMusic") || s.equals("stopVoice")) {
             ReleaseAll();
         }
 
     }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();

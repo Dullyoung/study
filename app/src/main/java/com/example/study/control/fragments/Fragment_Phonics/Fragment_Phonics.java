@@ -26,6 +26,7 @@ import com.example.study.R;
 import com.example.study.model.bean.PhoneticIndexBean;
 import com.example.study.model.engin.PhoneticIndexEngin;
 import com.example.study.view.adapter.FragAdapter;
+import com.example.study.view.adapter.PhoneticFragmentAdapter;
 import com.example.study.view.adapter.PhonticAdapter;
 import com.kk.securityhttp.domain.ResultInfo;
 
@@ -60,12 +61,14 @@ public class Fragment_Phonics extends Fragment implements ViewPager.OnPageChange
     ViewPager spell_vp, symbol_vp;
     List<Fragment> symbolList, spellList;
     SwipeRefreshLayout refreshLayout;
-    int[] Images  = {
-        R.mipmap.category1, R.mipmap.category2, R.mipmap.category3,
-                R.mipmap.category4, R.mipmap.category5, R.mipmap.category6,
-                R.mipmap.category7, R.mipmap.category8, R.mipmap.category9,
-                R.mipmap.category10, R.mipmap.category11, R.mipmap.category12
-    };;
+    int[] Images = {
+            R.mipmap.category1, R.mipmap.category2, R.mipmap.category3,
+            R.mipmap.category4, R.mipmap.category5, R.mipmap.category6,
+            R.mipmap.category7, R.mipmap.category8, R.mipmap.category9,
+            R.mipmap.category10, R.mipmap.category11, R.mipmap.category12
+    };
+    ;
+
     public Fragment_Phonics() {
         // Required empty public constructor
     }
@@ -81,18 +84,19 @@ public class Fragment_Phonics extends Fragment implements ViewPager.OnPageChange
         symbol_vp = view.findViewById(R.id.symbol_info_vp);
         spell_vp.addOnPageChangeListener(this);
         symbol_vp.addOnPageChangeListener(this);
-        refreshLayout=view.findViewById(R.id.refresh);
+        refreshLayout = view.findViewById(R.id.refresh);
         refreshLayout.setOnRefreshListener(() -> getData());
         getData();
         return view;
     }
+
+    ResultInfo<PhoneticIndexBean> json;
 
     private void getData() {
         spell = view.findViewById(R.id.spell_rv);
         symbol = view.findViewById(R.id.symbol_rv);
         spell_desp = view.findViewById(R.id.spell_text_desp);
         symbol_desp = view.findViewById(R.id.symbol_text_desp);
-
         spell_id = new ArrayList<>();
         symbol_id = new ArrayList<>();
         symbol_adapter = new PhonticAdapter();
@@ -106,47 +110,50 @@ public class Fragment_Phonics extends Fragment implements ViewPager.OnPageChange
             String ResultLocal = readTextFile("PhoneticIndex");//本地获取到的Json数据
             Type type = new TypeReference<ResultInfo<PhoneticIndexBean>>() {
             }.getType();
-            ResultInfo<PhoneticIndexBean> json = JSONObject.parseObject(ResultLocal, type);
-            spell_desp.setText(getContext().getString(R.string.space) + json.getData().getSpelling().getDesp());
-            symbol_desp.setText(getContext().getString(R.string.space) + json.getData().getSymbol().getDesp());
-            for (PhoneticIndexBean.Symbol.Detail detail : json.getData().getSymbol().getDetailList()) {
-                symbol_id.add(detail.getId());
-                symbolList.add(new FragmentPhonetic_Info(detail.getId()));
-            }
-            for (PhoneticIndexBean.Spelling.Detail detail : json.getData().getSpelling().getDetailList()) {
-                spell_id.add(detail.getId());
-                spellList.add(new FragmentPhonetic_Info(detail.getId()));
-            }
-            refreshLayout.setRefreshing(false);
-
-            if (spell_id.size()>0&&symbol_id.size()>0){
-                symbol_adapter.setConfig(getContext(), Images, symbol_id);
-                spell_adapter.setConfig(getContext(), Images, spell_id);
-                spell_adapter.setOnImgClickListener((position, id) -> {
-                    FragAdapter adapter = new FragAdapter(getChildFragmentManager(), FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT, spellList);
-                    spell_vp.setAdapter(adapter);
-                    spell_vp.setCurrentItem(position);
-                    spell_vp.setOffscreenPageLimit(1);
-                    spell_vp.setVisibility(View.VISIBLE);
-                    show.setVisibility(View.GONE);
-                });
-                symbol_adapter.setOnImgClickListener((position, id) -> {
-                    FragAdapter adapter1 = new FragAdapter(getChildFragmentManager(),
-                            FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT,symbolList);
-                    symbol_vp.setAdapter(adapter1);
-                    symbol_vp.setCurrentItem(position);
-                    symbol_vp.setOffscreenPageLimit(1);
-                    symbol_vp.setVisibility(View.VISIBLE);
-                });
-
-            }
-            spell.setAdapter(spell_adapter);
-            symbol.setAdapter(symbol_adapter);
+            json = JSONObject.parseObject(ResultLocal, type);
+            upDateView();
         } else {
             getNetData();
         }
 
+    }
 
+    public void upDateView() {
+        spell_desp.setText(getContext().getString(R.string.space) + json.getData().getSpelling().getDesp());
+        symbol_desp.setText(getContext().getString(R.string.space) + json.getData().getSymbol().getDesp());
+        for (PhoneticIndexBean.Symbol.Detail detail : json.getData().getSymbol().getDetailList()) {
+            symbol_id.add(detail.getId());
+            symbolList.add(new FragmentPhonetic_Info(detail.getId()));
+        }
+        for (PhoneticIndexBean.Spelling.Detail detail : json.getData().getSpelling().getDetailList()) {
+            spell_id.add(detail.getId());
+            spellList.add(new FragmentPhonetic_Info(detail.getId()));
+        }
+        if (spell_id.size() > 0 && symbol_id.size() > 0) {
+            symbol_adapter.setConfig(getContext(), Images, symbol_id);
+            spell_adapter.setConfig(getContext(), Images, spell_id);
+            spell_adapter.setOnImgClickListener((position, id) -> {
+                PhoneticFragmentAdapter adapter = new PhoneticFragmentAdapter(getChildFragmentManager(),
+                        FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT, spellList);
+                spell_vp.setAdapter(adapter);
+                spell_vp.setCurrentItem(position);
+                spell_vp.setOffscreenPageLimit(1);
+                spell_vp.setVisibility(View.VISIBLE);
+                show.setVisibility(View.GONE);
+            });
+            symbol_adapter.setOnImgClickListener((position, id) -> {
+                PhoneticFragmentAdapter adapter1 = new PhoneticFragmentAdapter(getChildFragmentManager(),
+                        FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT, symbolList);
+                symbol_vp.setAdapter(adapter1);
+                symbol_vp.setCurrentItem(position);
+                symbol_vp.setOffscreenPageLimit(1);
+                symbol_vp.setVisibility(View.VISIBLE);
+            });
+
+        }
+        spell.setAdapter(spell_adapter);
+        symbol.setAdapter(symbol_adapter);
+        refreshLayout.setRefreshing(false);
     }
 
     private void getNetData() {
@@ -154,15 +161,14 @@ public class Fragment_Phonics extends Fragment implements ViewPager.OnPageChange
         engin.getPhonticIndex(getContext()).subscribe(new Observer<ResultInfo<PhoneticIndexBean>>() {
             @Override
             public void onCompleted() {
+                upDateView();
                 refreshLayout.setRefreshing(false);
-
             }
 
             @Override
             public void onError(Throwable e) {
                 Toast.makeText(getContext(), "数据获取失败", Toast.LENGTH_SHORT).show();
                 refreshLayout.setRefreshing(false);
-
             }
 
             @Override
@@ -171,40 +177,7 @@ public class Fragment_Phonics extends Fragment implements ViewPager.OnPageChange
                     phoneticIndexBeanResultInfo.setResponse(null);
                     saveToSDCard(getActivity(), "PhoneticIndex", JSON.toJSONString(phoneticIndexBeanResultInfo));
                 }
-                spell_desp.setText(getContext().getString(R.string.space) + phoneticIndexBeanResultInfo.getData().getSpelling().getDesp());
-                symbol_desp.setText(getContext().getString(R.string.space) + phoneticIndexBeanResultInfo.getData().getSymbol().getDesp());
-                for (PhoneticIndexBean.Symbol.Detail detail : phoneticIndexBeanResultInfo.getData().getSymbol().getDetailList()) {
-                    symbol_id.add(detail.getId());
-                    symbolList.add(new FragmentPhonetic_Info(detail.getId()));
-                }
-                for (PhoneticIndexBean.Spelling.Detail detail : phoneticIndexBeanResultInfo.getData().getSpelling().getDetailList()) {
-                    spell_id.add(detail.getId());
-                    spellList.add(new FragmentPhonetic_Info(detail.getId()));
-                }
-                if (spell_id.size()>0&&symbol_id.size()>0){
-                    symbol_adapter.setConfig(getContext(), Images, symbol_id);
-                    spell_adapter.setConfig(getContext(), Images, spell_id);
-                    spell_adapter.setOnImgClickListener((position, id) -> {
-                        FragAdapter adapter = new FragAdapter(getChildFragmentManager(), FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT, spellList);
-                        spell_vp.setAdapter(adapter);
-                        spell_vp.setCurrentItem(position);
-                        spell_vp.setOffscreenPageLimit(1);
-                        spell_vp.setVisibility(View.VISIBLE);
-                        show.setVisibility(View.GONE);
-                    });
-                    symbol_adapter.setOnImgClickListener((position, id) -> {
-                        FragAdapter adapter1 = new FragAdapter(getChildFragmentManager(),
-                                FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT,symbolList);
-                        symbol_vp.setAdapter(adapter1);
-                        symbol_vp.setCurrentItem(position);
-                        symbol_vp.setOffscreenPageLimit(1);
-                        symbol_vp.setVisibility(View.VISIBLE);
-                    });
-
-                }
-                spell.setAdapter(spell_adapter);
-                symbol.setAdapter(symbol_adapter);
-                refreshLayout.setRefreshing(false);
+                json = phoneticIndexBeanResultInfo;
 
             }
 
@@ -223,24 +196,9 @@ public class Fragment_Phonics extends Fragment implements ViewPager.OnPageChange
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-
         EventBus.getDefault().unregister(this);
     }
-    private void unbindDrawables(View view)
-    {
-        if (view.getBackground() != null)
-        {
-            view.getBackground().setCallback(null);
-        }
-        if (view instanceof ViewGroup && !(view instanceof AdapterView))
-        {
-            for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++)
-            {
-                unbindDrawables(((ViewGroup) view).getChildAt(i));
-            }
-            ((ViewGroup) view).removeAllViews();
-        }
-    }
+
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 

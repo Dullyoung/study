@@ -66,7 +66,7 @@ public class FragmentPhonetic_Info extends Fragment {
         setView(rootView);
         setData();
         //如果本地有数据就从本地获取
-        if (!new File(dir, "PhoneticDetail" + id).exists()) {
+        if (new File(dir, "PhoneticDetail" + id).exists()) {
             String ResultLocal = readTextFile("PhoneticDetail" + id);//本地获取到的Json数据
             Type type = new TypeReference<ResultInfo<PhonticDetailBean>>() {
             }.getType();
