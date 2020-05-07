@@ -212,9 +212,15 @@ public class Fragment_Learn extends Fragment implements View.OnClickListener, Vi
     }
 
     String TAG = "aaaaa";
-
+    int lastPage=0;
     @Override
     public void onPageSelected(int position) {//滑到新的界面执行 position为当前页面的索引
+        if (position>9){
+            EventBus.getDefault().post("pay");
+            learnviewpager.setCurrentItem(lastPage);
+            return;
+        }
+        lastPage=position;
         EventBus.getDefault().post("stopVideo");
         EventBus.getDefault().post("stopMusic");
         EventBus.getDefault().post(new PageChanger("learn", position));

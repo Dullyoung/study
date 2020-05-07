@@ -107,7 +107,7 @@ public class H5page extends AppCompatActivity {
         }
         return super.onKeyDown(keyCode, event);
     }
-    private long firstPressedTime;//按下第一次退出的时间
+
     @Override
     public void onBackPressed() { //用户主界面退出
             finish();

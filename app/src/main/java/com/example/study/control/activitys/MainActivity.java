@@ -528,8 +528,11 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void getMessage(String s) { //跟我读界面的权限请求 因为请求权限弹窗只能拿到activity里来进行
-        if (s.equals("permission")){
+        if (s.equals("permission")) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 1);
+        }
+        if (s.equals("pay")) {
+            PayIn(null);
         }
     }
 
@@ -643,10 +646,9 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     }
 
     //带回调 对获取成功和失败有监控
-    public  void sendRequestWithOkhttp(String url, okhttp3.Callback callback) {
+    public void sendRequestWithOkhttp(String url, okhttp3.Callback callback) {
         RequestBody requestBody = RequestBody.create(JSON1, JSONObject.toJSON("{\"name\":\"admin\",\"psw\":\"admin\"}").toString());
         OkHttpClient client = new OkHttpClient();
-
         Request request = new Request.Builder().url(url).post(requestBody).build();
         client.newCall(request).enqueue(callback);
     }

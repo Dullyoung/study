@@ -27,7 +27,8 @@ public class AdvEngine  extends BaseEngin {
     public String getUrl() {
         return "http://tic.upkao.com/api/index/menu_adv?app_id=5";
     }
-    //参数如下：
+    //参数如下：  http://m.upkao.com/ybzs.html
+
 //{"imeil":"1771181c2a9b2474","device_type":"2","app_version":"31",
 // "encrypt_response":"true","id":"236","agent_id":"1","sv":"AAA  5.1.1"}
     public Observable<ResultInfo<AdvInfoBean>> getAdvInfo() {
