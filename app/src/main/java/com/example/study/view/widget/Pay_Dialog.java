@@ -1,122 +1,149 @@
 package com.example.study.view.widget;
 
+import android.app.Activity;
 import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Point;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
+import android.widget.Toast;
 
+import androidx.core.content.FileProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.PagerAdapter;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.example.study.R;
+import com.example.study.model.bean.GoodListInfo;
+import com.example.study.model.bean.LearnInfoWrapper;
+import com.example.study.model.engin.GoodEngin;
+import com.example.study.view.adapter.PayAdapter;
+import com.kk.securityhttp.domain.ResultInfo;
+
+import java.io.File;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
+import rx.Observer;
+
+import static com.example.study.model.Cache.Cache_Json.dir;
+import static com.example.study.model.Cache.Cache_Json.readTextFile;
+import static com.example.study.model.Cache.Cache_Json.saveToSDCard;
 
 public class Pay_Dialog extends Dialog {
-    private boolean isChanged = true;
-    ScrollView scrollView;
-    RelativeLayout pay_select11, pay_select22, pay_select33;
-    private ImageView pay, pay_select1, pay_select2, pay_select3, pay_wx, pay_ali, pay_delete;
+    String TAG = "aaaa";
+    GoodListInfo goodListInfo;
+    Context context;
+    ImageView wx, ali;
+    RecyclerView recyclerView;
+    boolean wxPay=true;
+    PayAdapter adapter = new PayAdapter();
 
     public Pay_Dialog(Context context) {
         super(context, R.style.no_border_dialog);
+        this.context = context;
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         requestWindowFeature(Window.FEATURE_NO_TITLE);//去除标题
         setContentView(R.layout.pay_main);//引入自定义的my_dialog.xml布局
-        pay = (ImageView) findViewById(R.id.pay);
-        pay.getParent().requestDisallowInterceptTouchEvent(true);
-        pay_delete = (ImageView) findViewById(R.id.pay_delete);
-        pay_delete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-            }
-        });
-        pay_select11 = (RelativeLayout) findViewById(R.id.pay_select11);
-        pay_select1 = (ImageView) findViewById(R.id.pay_select1);
-        pay_select11.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                v.getParent().requestDisallowInterceptTouchEvent(true);//通知父控件srcollview请勿拦截本控件touch事件
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_UP:
-                        pay_select1.setImageResource(R.mipmap.pay_select_press);
-                        pay_select2.setImageResource(R.mipmap.pay_select_normal);
-                        pay_select3.setImageResource(R.mipmap.pay_select_normal);
-                        break;
-                    default:
-                        break;
-                }
+        Window window = getWindow();
+        window.setGravity(Gravity.CENTER);
+        Point point = new Point();
+        setCanceledOnTouchOutside(false);
+        window.getWindowManager().getDefaultDisplay().getSize(point);
+        window.setLayout(point.x, WindowManager.LayoutParams.WRAP_CONTENT);
+        recyclerView = findViewById(R.id.good_rv);
+        recyclerView.setLayoutManager(new LinearLayoutManager(context, RecyclerView.VERTICAL, false));
+        getData();
 
-                return true;
-            }
+        findViewById(R.id.iv_pay_close).setOnClickListener(v -> {
+            dismiss();
         });
-        pay_select22 = (RelativeLayout) findViewById(R.id.pay_select22);
-        pay_select2 = (ImageView) findViewById(R.id.pay_select2);
-        pay_select22.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        break;
-                    case MotionEvent.ACTION_BUTTON_PRESS:
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        pay_select2.setImageResource(R.mipmap.pay_select_press);
-                        pay_select1.setImageResource(R.mipmap.pay_select_normal);
-                        pay_select3.setImageResource(R.mipmap.pay_select_normal);
-                        break;
-                    default:
-                        break;
-                }
-
-                return true;
-            }
-        });
-        pay_select33 = (RelativeLayout) findViewById(R.id.pay_select33);
-        pay_select3 = (ImageView) findViewById(R.id.pay_select3);
-        pay_select33.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        break;
-                    case MotionEvent.ACTION_BUTTON_PRESS:
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        pay_select1.setImageResource(R.mipmap.pay_select_normal);
-                        pay_select2.setImageResource(R.mipmap.pay_select_normal);
-                        pay_select3.setImageResource(R.mipmap.pay_select_press);
-                        break;
-                    default:
-                        break;
-                }
-
-                return true;
-            }
-        });
-        pay_wx = (ImageView) findViewById((R.id.pay_wx));
-        pay_wx.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                pay_wx.setImageResource(R.mipmap.pay_wx_press);
-                pay_ali.setImageResource(R.mipmap.pay_ali_normal);
-            }
-        });
-        pay_ali = (ImageView) findViewById(R.id.pay_ali);
-        pay_ali.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                pay_ali.setImageResource(R.mipmap.pay_ali_press);
-                pay_wx.setImageResource(R.mipmap.pay_wx_normal);
+        findViewById(R.id.iv_pay_charge).setOnClickListener(v -> {
+            String price=goodListInfo.getGoodInfoList().get(adapter.getSelectedPosition()).getReal_price();
+            String text=goodListInfo.getGoodInfoList().get(adapter.getSelectedPosition()).getTitle();
+            if (wxPay){
+                Toast.makeText(context, "微信支付", Toast.LENGTH_SHORT).show();
+            }else {
+                MyUtils.goToAliPayTransferMoneyPerson(context,price,text,"2088522744286013");
+                Toast.makeText(context, "支付宝支付", Toast.LENGTH_SHORT).show();
             }
         });
 
-
+        wx = findViewById(R.id.iv_wx_pay);
+        ali = findViewById(R.id.iv_ali_pay);
+        wx.setOnClickListener(v -> {
+            wxPay=true;
+            wx.setImageResource(R.mipmap.pay_wx_press);
+            ali.setImageResource(R.mipmap.pay_ali_normal);
+        });
+        ali.setOnClickListener(v -> {
+            ali.setImageResource(R.mipmap.pay_ali_press);
+            wx.setImageResource(R.mipmap.pay_wx_normal);
+            wxPay=false;
+        });
     }
+
+    private void getData() {
+
+        if (new File(dir, "GoodInfo").exists()) {
+            String ResultLocal = readTextFile("GoodInfo");//本地获取到的Json数据
+            Type type = new TypeReference<ResultInfo<GoodListInfo>>() {
+            }.getType();
+            ResultInfo<GoodListInfo> json = com.alibaba.fastjson.JSONObject.parseObject(ResultLocal, type);
+            goodListInfo = json.getData();
+            adapter.setConfig(context, goodListInfo);
+            recyclerView.setAdapter(adapter);
+            return;
+        }
+
+        GoodEngin engin = new GoodEngin(context);
+        engin.getGoodList().subscribe(new Observer<ResultInfo<GoodListInfo>>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onNext(ResultInfo<GoodListInfo> goodListInfoResultInfo) {
+                goodListInfoResultInfo.setResponse(null);
+                saveToSDCard((Activity) context, "GoodInfo", JSON.toJSONString(goodListInfoResultInfo));
+                goodListInfo = goodListInfoResultInfo.getData();
+                adapter.setConfig(context, goodListInfo);
+                recyclerView.setAdapter(adapter);
+            }
+        });
+    }
+
 
 }

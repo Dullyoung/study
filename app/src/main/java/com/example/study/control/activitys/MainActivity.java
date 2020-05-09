@@ -9,6 +9,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ContentValues;
@@ -17,6 +18,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -47,15 +49,20 @@ import com.example.study.control.fragments.Fragment_Phonics.Fragment_Phonics;
 import com.example.study.control.fragments.Fragment_Read_To_Me.Fragment_Read_To_Me;
 import com.example.study.model.Cache.CacheUtils;
 import com.example.study.model.bean.AdvInfoBean;
+import com.example.study.model.bean.GoodListInfo;
 import com.example.study.model.bean.LearnInfo;
 import com.example.study.model.bean.LearnInfoWrapper;
+import com.example.study.model.bean.LoginDataInfo;
 import com.example.study.model.engin.AdvEngine;
+import com.example.study.model.engin.GoodEngin;
+import com.example.study.model.engin.InitEngin;
 import com.example.study.model.engin.LearnEngin;
 import com.example.study.view.adapter.FragAdapter;
 import com.example.study.view.adapter.LearnAdapter;
 import com.example.study.view.widget.CacheTipDialog;
 import com.example.study.view.widget.Exit_Dialog;
 import com.example.study.view.widget.JumpDialog;
+import com.example.study.view.widget.MyUtils;
 import com.example.study.view.widget.MyViewPager;
 import com.example.study.view.widget.Pay_Dialog;
 import com.example.study.R;
@@ -126,8 +133,13 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         //将imageview与对应的图片通过id绑定
         layoutInflater = LayoutInflater.from(this);//获取layout inflater实例
         h5page = findViewById(R.id.h5page);
+        MyUtils.saveImageToSD( BitmapFactory.decodeResource(getResources(),R.mipmap.icon_share),dir.getAbsolutePath(),"shareIcon.png");
+
         GoToH5();
         SetView();
+        getGoodInfo();
+        getShareInfo();
+
         EventBus.getDefault().register(this);
         init();//主界面滑动
     }
@@ -141,14 +153,9 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     }
 
     private void hideSystemUI() {
-        // Enables regular immersive mode.
-        // For "lean back" mode, remove SYSTEM_UI_FLAG_IMMERSIVE.
-        // Or for "sticky immersive," replace it with SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_IMMERSIVE
-                        // Set the content to appear under the system bars so that the
-                        // content doesn't resize when the system bars hide and show.
                         | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -157,85 +164,59 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
                         | View.SYSTEM_UI_FLAG_FULLSCREEN);
     }
 
-    private void setFullScreen() {
-        Window window = getWindow();
-        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS); //设置状态栏以透明背景绘制
-        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS); //设置沉浸式状态栏  不设置这个弹出dialog的时候Activity窗口会向下挪出状态栏的距离
-        window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-
-        window.getDecorView().setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+    private void getShareInfo(){
+        if (new File(dir,"shareInfo").exists()){
+            return;
+        }
+        InitEngin initEngin=new InitEngin(this);
+        initEngin.getLoginInfo().subscribe(new Observer<ResultInfo<LoginDataInfo>>() {
             @Override
-            public void onSystemUiVisibilityChange(int visibility) {
-                if (window.getDecorView().getSystemUiVisibility() != View.SYSTEM_UI_FLAG_FULLSCREEN) {
+            public void onCompleted() {
 
-                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
-                }
+            }
 
+            @Override
+            public void onError(Throwable e) {
 
+            }
+
+            @Override
+            public void onNext(ResultInfo<LoginDataInfo> loginDataInfoResultInfo) {
+                loginDataInfoResultInfo.setResponse(null);
+                saveToSDCard(MainActivity.this,"shareInfo",JSONObject.toJSONString(loginDataInfoResultInfo));
             }
         });
     }
 
-    //在activity的onCreate方法中先调用此方法在setContent进行实现全屏模式
-    private void setFullScreenMode() {
-        //设置永不休眠模式
-        Window window = this.getWindow();
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
-                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        //隐藏系统工具栏方式一
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
-        //隐藏底部导航栏
-        View decorView = getWindow().getDecorView();
-        if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) {
-            decorView.setSystemUiVisibility(View.GONE);
-        } else if (Build.VERSION.SDK_INT >= 19) {
-            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN);
+private void getGoodInfo(){
+        if (new File(dir,"GoodInfo").exists()){
+            return;
+        }
+    GoodEngin engin = new GoodEngin(this);
+    engin.getGoodList().subscribe(new Observer<ResultInfo<GoodListInfo>>() {
+        @Override
+        public void onCompleted() {
+
         }
 
-        if (window != null) {
-            window.setGravity(Gravity.BOTTOM);  //设置dialog显示的位置
-            //解决 状态栏变色的bug
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS); //设置状态栏以透明背景绘制
-                window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS); //设置沉浸式状态栏  不设置这个弹出dialog的时候Activity窗口会向下挪出状态栏的距离
-                window.setStatusBarColor(Color.TRANSPARENT);//设置状态栏背景透明
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    try {
-                        Class decorViewClazz = Class.forName("com.android.internal.policy.DecorView");
-                        Field field = decorViewClazz.getDeclaredField("mSemiTransparentStatusBarColor");
-                        field.setAccessible(true);
-                        field.setInt(getWindow().getDecorView(), Color.TRANSPARENT);  //去掉高版本蒙层改为透明
-                    } catch (Exception e) {
-                    }
-                }
-            }
+        @Override
+        public void onError(Throwable e) {
+
         }
 
-        decorView.setOnSystemUiVisibilityChangeListener(visibility -> { //当系统UI发生变化时 如果不是全屏并且隐藏的 就切换成全屏切隐藏
-            View decorView1 = getWindow().getDecorView();
-            int uiState = decorView1.getSystemUiVisibility();
-            if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) {
-                if (uiState != View.GONE) decorView1.setSystemUiVisibility(View.GONE);
-            } else if (Build.VERSION.SDK_INT >= 19) {
-                if (uiState != (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN))
-                    decorView1.setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY //这三个要组合使用 中间这个才回生效 至少要有两个
-                            | View.SYSTEM_UI_FLAG_FULLSCREEN);
-            }
-        });
-    }
+        @Override
+        public void onNext(ResultInfo<GoodListInfo> goodListInfoResultInfo) {
+            goodListInfoResultInfo.setResponse(null);
+            saveToSDCard(MainActivity.this, "GoodInfo", JSON.toJSONString(goodListInfoResultInfo));
+        }
+    });
 
+};
 
     //H5界面数据获取
     public void GoToH5() {
-        SharedPreferences sp = getSharedPreferences("h5", MODE_PRIVATE);
-        String json = sp.getString("advInfo", "");
-        if (!json.equals("")) {
+        if (new File(dir,"advInfo").exists()){
+            String json=  readTextFile("advInfo");
             Type type = new TypeReference<ResultInfo<AdvInfoBean>>() {
             }.getType();
             ResultInfo<AdvInfoBean> advInfo = JSONObject.parseObject(json, type);
@@ -250,7 +231,10 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
                     onPause();
                 }
             });
+            return;
         }
+
+
         AdvEngine engine = new AdvEngine(this);
         engine.getAdvInfo().subscribe(new Observer<ResultInfo<AdvInfoBean>>() {
             @Override
@@ -264,10 +248,8 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
             @Override
             public void onNext(ResultInfo<AdvInfoBean> advInfoBeanResultInfo) {
-                SharedPreferences.Editor editor = sp.edit();
                 advInfoBeanResultInfo.setResponse(null);
-                editor.putString("advInfo", JSONObject.toJSONString(advInfoBeanResultInfo));
-                editor.commit();
+                saveToSDCard(MainActivity.this,"advInfo", JSON.toJSONString(advInfoBeanResultInfo));
                 h5page.setText(advInfoBeanResultInfo.getData().getH5page().getButton_txt());
                 Intent intent = new Intent(MainActivity.this, H5page.class);
                 intent.putExtra("url", advInfoBeanResultInfo.getData().getH5page().getUrl());
@@ -557,8 +539,9 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     //支付窗口弹窗
     public void PayIn(View v) {
+
         if (pay_main == null) {
-            pay_main = new Pay_Dialog(this);
+            pay_main = new Pay_Dialog(MainActivity.this);
             pay_main.setCanceledOnTouchOutside(false);
             Window window = pay_main.getWindow();
             window.setWindowAnimations(R.style.dialog_action);
@@ -570,6 +553,8 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     //分享按钮弹窗
     public void Shared() {
+
+
         if (share == null) {
             share = new Share_Dialog(this);
             share.setCanceledOnTouchOutside(false);//设置点击窗口外不可取消
@@ -628,13 +613,11 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
                     @Override
                     public void onFailure(Call call, IOException e) {
                         handler.sendEmptyMessage(FAILED);
-
                     }
 
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
                         //response用过一次之后流就会关闭 再次调用就会报状态异常的错误
-
                         versionData = response.body().string();
                         handler.sendEmptyMessage(SUCCESS);
                     }

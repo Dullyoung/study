@@ -3,11 +3,13 @@ package com.example.study.control.activitys;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.AnimationDrawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -18,12 +20,20 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.alibaba.fastjson.JSONObject;
 import com.example.study.R;
+import com.example.study.model.bean.LoginDataInfo;
+import com.example.study.model.engin.InitEngin;
 import com.example.study.view.widget.Exit_Dialog;
+import com.example.study.view.widget.MyUtils;
+import com.kk.securityhttp.domain.ResultInfo;
 
 import java.io.IOException;
 
 import cn.jzvd.Jzvd;
+import rx.Observer;
+
+import static com.example.study.model.Cache.Cache_Json.dir;
 
 public class WelcomeActivity extends AppCompatActivity {
     private ImageView imageView;

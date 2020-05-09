@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -72,6 +73,7 @@ public class FragmentPhonetic_Info extends Fragment {
             }.getType();
             ResultInfo<PhonticDetailBean> json = JSONObject.parseObject(ResultLocal, type);
             if (json != null) {
+                Log.i("aaaa", "onCreateView: "+json);
                 title_tv.setText(json.getData().getTitle());
                 desp_tv.setText(json.getData().getDesp());
                 String proxyUrl = proxyCacheServer.getProxyUrl(json.getData().getUrl());

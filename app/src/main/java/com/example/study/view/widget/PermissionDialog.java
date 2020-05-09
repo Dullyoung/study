@@ -37,7 +37,7 @@ public class PermissionDialog extends Dialog {
         title.setText("提示");
         exit.setText("退出");
         know.setText("去授权");
-        message.setText("\t\t\t\t本软件内容多为音视频，会消耗大量数据流量流量，请允许读写权限将音视频缓存至本地减少数据流量消耗。");
+        message.setText("\t\t\t\t本软件内容多为音视频，会消耗大量数据流量，请允许读写权限将音视频缓存至本地减少数据流量消耗。");
         exit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

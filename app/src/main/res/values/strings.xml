@@ -11,7 +11,10 @@
     <string name="space">&#8195;&#8195;&#8195;&#8195;&#8195;&#8194;</string>
     <string name="cache_size">缓存大小</string>
     <string name="sys_version">系统版本</string>
+    <string name="freePage">9</string>
     <string name="serverUrl">http://192.168.80.252:8080/update</string>
+    <string name="downloadUrl">http://192.168.80.252:8080/update/app.apk</string>
+
     <string name="load_error">\n页面加载失败,可能的原因是：\n\n1.您的设备无网络，请检查网络连接\n\n2.该界面发生了异常，请刷新界面或稍后再试。\n</string>
     <!--    {"version":"1.0.11","uri":"http://192.168.80.252:8080/update/app.apk"}-->
 </resources>

@@ -91,7 +91,7 @@ public class Fragment_Learn extends Fragment implements View.OnClickListener, Vi
         }
         learnviewpager = rootView.findViewById(R.id.vp_learn);//把vp绑定到learn 里的viewpager
         EventBus.getDefault().register(this);
-        refreshLayout=rootView.findViewById(R.id.refresh);
+        refreshLayout = rootView.findViewById(R.id.refresh);
         refreshLayout.setOnRefreshListener(() -> {
             fragmentList = new ArrayList<>();
             getData();
@@ -138,11 +138,8 @@ public class Fragment_Learn extends Fragment implements View.OnClickListener, Vi
 
                 @Override
                 public void onNext(ResultInfo<LearnInfoWrapper> learnInfoWrapperResultInfo) {
-                    if (!new File(dir, "LearnJson").exists()) {
-                        learnInfoWrapperResultInfo.setResponse(null);
-                        saveToSDCard(getActivity(), "LearnJson", JSON.toJSONString(learnInfoWrapperResultInfo));
-                    }
-
+                    learnInfoWrapperResultInfo.setResponse(null);
+                    saveToSDCard(getActivity(), "LearnJson", JSON.toJSONString(learnInfoWrapperResultInfo));
                     for (LearnInfo l : learnInfoWrapperResultInfo.getData().getLearnInfoList()
                     ) {
                         fragmentList.add(new Fragment_Learn_Child(l));
@@ -173,9 +170,9 @@ public class Fragment_Learn extends Fragment implements View.OnClickListener, Vi
     }
 
     public void setPage() {
-            if (learn_fragAdapter!=null&&learn_fragAdapter!=null){
-                page.setText((learnviewpager.getCurrentItem() + 1) + "/" + learn_fragAdapter.getCount());
-            }
+        if (learn_fragAdapter != null && learn_fragAdapter != null) {
+            page.setText((learnviewpager.getCurrentItem() + 1) + "/" + learn_fragAdapter.getCount());
+        }
 
     }
 
@@ -212,15 +209,16 @@ public class Fragment_Learn extends Fragment implements View.OnClickListener, Vi
     }
 
     String TAG = "aaaaa";
-    int lastPage=0;
+    int lastPage = 0;
+
     @Override
     public void onPageSelected(int position) {//滑到新的界面执行 position为当前页面的索引
-        if (position>9){
+        if (position > Integer.parseInt(getString(R.string.freePage))) {
             EventBus.getDefault().post("pay");
             learnviewpager.setCurrentItem(lastPage);
             return;
         }
-        lastPage=position;
+        lastPage = position;
         EventBus.getDefault().post("stopVideo");
         EventBus.getDefault().post("stopMusic");
         EventBus.getDefault().post(new PageChanger("learn", position));
