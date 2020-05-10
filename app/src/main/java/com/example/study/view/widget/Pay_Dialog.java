@@ -85,6 +85,7 @@ public class Pay_Dialog extends Dialog {
             dismiss();
         });
         findViewById(R.id.iv_pay_charge).setOnClickListener(v -> {
+            SharedPreferenceUtil.write(context,"vip",true);
             String price=goodListInfo.getGoodInfoList().get(adapter.getSelectedPosition()).getReal_price();
             String text=goodListInfo.getGoodInfoList().get(adapter.getSelectedPosition()).getTitle();
             if (wxPay){

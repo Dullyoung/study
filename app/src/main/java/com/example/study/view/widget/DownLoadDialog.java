@@ -2,23 +2,27 @@ package com.example.study.view.widget;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
 import com.example.study.R;
-import com.example.study.model.Cache.CacheUtils;
 
-public class CacheTipDialog extends Dialog {
+public class DownLoadDialog extends Dialog {
     private TextView title, message, exit, know;
     Context context;
-    public CacheTipDialog(@NonNull Context context) {
+    String uri;
+
+    public DownLoadDialog(@NonNull Context context, String uri) {
         super(context, R.style.no_border_dialog);
-        this.context=context;
+        this.context = context;
+        this.uri = uri;
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,23 +32,17 @@ public class CacheTipDialog extends Dialog {
         message = findViewById(R.id.content_message);
         exit = findViewById(R.id.exit);
         know = findViewById(R.id.know);
-        title.setText("提示");
-        exit.setText("取消");
-        know.setText("确定");
-        message.setText("\t\t\t\t是否确定清除缓存，清除后音视频再次播放需要重新消耗流量！");
-        exit.setOnClickListener(v -> dismiss());
-        know.setOnClickListener(v -> {
-            CacheUtils.clearAllCache(context);
-           onButtonClickListener.Sure();
+        title.setText("版本更新");
+        message.setText("\t\t有新版本可以更新啦~快来下载更新吧~");
+        exit.setText("退出");
+        know.setText("立即下载");
+        exit.setOnClickListener(v -> {
             dismiss();
         });
-    }
-   private OnButtonClickListener onButtonClickListener;
-    public void setOnButtonClickListener(OnButtonClickListener onButtonClickListener)
-    {
-        this.onButtonClickListener=onButtonClickListener;
-    }
-  public    interface OnButtonClickListener{
-        public void Sure();
+        know.setOnClickListener(v -> {
+            Intent viewIntent = new Intent("android.intent.action.VIEW", Uri.parse(uri));
+            context.startActivity(viewIntent);
+            dismiss();
+        });
     }
 }

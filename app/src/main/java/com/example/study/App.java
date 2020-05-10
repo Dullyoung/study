@@ -9,6 +9,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.danikula.videocache.HttpProxyCacheServer;
 import com.example.study.model.bean.AdvInfoBean;
 import com.example.study.model.engin.AdvEngine;
+import com.example.study.view.widget.SharedPreferenceUtil;
 import com.kk.securityhttp.domain.GoagalInfo;
 import com.kk.securityhttp.domain.ResultInfo;
 import com.kk.securityhttp.net.contains.HttpConfig;
@@ -37,7 +38,7 @@ import rx.schedulers.Schedulers;
 
 public class App extends Application {
     private static App INSTANSE;
-
+    public static boolean is_vip=false;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -60,7 +61,7 @@ public class App extends Application {
     public static void initGoagal(Context context) {
         //全局信息初始化
         GoagalInfo.get().init(context);
-
+       is_vip= SharedPreferenceUtil.readBoolean(context,"vip");
 //        //设置文件唯一性 防止手机相互拷贝
 //        FileUtil.setUuid(GoagalInfo.get().uuid);
 

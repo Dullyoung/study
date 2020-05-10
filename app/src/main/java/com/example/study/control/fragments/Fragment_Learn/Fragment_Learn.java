@@ -46,6 +46,8 @@ import java.util.List;
 
 import rx.Observer;
 
+import static com.example.study.App.is_vip;
+
 import static com.example.study.model.Cache.Cache_Json.dir;
 import static com.example.study.model.Cache.Cache_Json.readTextFile;
 import static com.example.study.model.Cache.Cache_Json.saveToSDCard;
@@ -213,7 +215,7 @@ public class Fragment_Learn extends Fragment implements View.OnClickListener, Vi
 
     @Override
     public void onPageSelected(int position) {//滑到新的界面执行 position为当前页面的索引
-        if (position > Integer.parseInt(getString(R.string.freePage))) {
+        if (position > Integer.parseInt(getString(R.string.freePage))&&!is_vip) {
             EventBus.getDefault().post("pay");
             learnviewpager.setCurrentItem(lastPage);
             return;

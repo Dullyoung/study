@@ -60,6 +60,7 @@ import com.example.study.model.engin.LearnEngin;
 import com.example.study.view.adapter.FragAdapter;
 import com.example.study.view.adapter.LearnAdapter;
 import com.example.study.view.widget.CacheTipDialog;
+import com.example.study.view.widget.DownLoadDialog;
 import com.example.study.view.widget.Exit_Dialog;
 import com.example.study.view.widget.JumpDialog;
 import com.example.study.view.widget.MyUtils;
@@ -67,6 +68,7 @@ import com.example.study.view.widget.MyViewPager;
 import com.example.study.view.widget.Pay_Dialog;
 import com.example.study.R;
 import com.example.study.view.widget.Share_Dialog;
+import com.example.study.view.widget.SharedPreferenceUtil;
 import com.kk.securityhttp.domain.ResultInfo;
 
 import org.greenrobot.eventbus.EventBus;
@@ -91,6 +93,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import rx.Observer;
 
+import static com.example.study.App.is_vip;
 import static com.example.study.model.Cache.Cache_Json.dir;
 import static com.example.study.model.Cache.Cache_Json.readTextFile;
 import static com.example.study.model.Cache.Cache_Json.saveToSDCard;
@@ -133,8 +136,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         //将imageview与对应的图片通过id绑定
         layoutInflater = LayoutInflater.from(this);//获取layout inflater实例
         h5page = findViewById(R.id.h5page);
-        MyUtils.saveImageToSD( BitmapFactory.decodeResource(getResources(),R.mipmap.icon_share),dir.getAbsolutePath(),"shareIcon.png");
-
+        MyUtils.saveImageToSD(BitmapFactory.decodeResource(getResources(), R.mipmap.icon_share), dir.getAbsolutePath(), "shareIcon.png");
         GoToH5();
         SetView();
         getGoodInfo();
@@ -142,6 +144,12 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
         EventBus.getDefault().register(this);
         init();//主界面滑动
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        is_vip = SharedPreferenceUtil.readBoolean(this, "vip");
     }
 
     @Override
@@ -164,11 +172,11 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
                         | View.SYSTEM_UI_FLAG_FULLSCREEN);
     }
 
-    private void getShareInfo(){
-        if (new File(dir,"shareInfo").exists()){
+    private void getShareInfo() {
+        if (new File(dir, "shareInfo").exists()) {
             return;
         }
-        InitEngin initEngin=new InitEngin(this);
+        InitEngin initEngin = new InitEngin(this);
         initEngin.getLoginInfo().subscribe(new Observer<ResultInfo<LoginDataInfo>>() {
             @Override
             public void onCompleted() {
@@ -183,40 +191,42 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
             @Override
             public void onNext(ResultInfo<LoginDataInfo> loginDataInfoResultInfo) {
                 loginDataInfoResultInfo.setResponse(null);
-                saveToSDCard(MainActivity.this,"shareInfo",JSONObject.toJSONString(loginDataInfoResultInfo));
+                saveToSDCard(MainActivity.this, "shareInfo", JSONObject.toJSONString(loginDataInfoResultInfo));
             }
         });
     }
 
-private void getGoodInfo(){
-        if (new File(dir,"GoodInfo").exists()){
+    private void getGoodInfo() {
+        if (new File(dir, "GoodInfo").exists()) {
             return;
         }
-    GoodEngin engin = new GoodEngin(this);
-    engin.getGoodList().subscribe(new Observer<ResultInfo<GoodListInfo>>() {
-        @Override
-        public void onCompleted() {
+        GoodEngin engin = new GoodEngin(this);
+        engin.getGoodList().subscribe(new Observer<ResultInfo<GoodListInfo>>() {
+            @Override
+            public void onCompleted() {
 
-        }
+            }
 
-        @Override
-        public void onError(Throwable e) {
+            @Override
+            public void onError(Throwable e) {
 
-        }
+            }
 
-        @Override
-        public void onNext(ResultInfo<GoodListInfo> goodListInfoResultInfo) {
-            goodListInfoResultInfo.setResponse(null);
-            saveToSDCard(MainActivity.this, "GoodInfo", JSON.toJSONString(goodListInfoResultInfo));
-        }
-    });
+            @Override
+            public void onNext(ResultInfo<GoodListInfo> goodListInfoResultInfo) {
+                goodListInfoResultInfo.setResponse(null);
+                saveToSDCard(MainActivity.this, "GoodInfo", JSON.toJSONString(goodListInfoResultInfo));
+            }
+        });
 
-};
+    }
+
+    ;
 
     //H5界面数据获取
     public void GoToH5() {
-        if (new File(dir,"advInfo").exists()){
-            String json=  readTextFile("advInfo");
+        if (new File(dir, "advInfo").exists()) {
+            String json = readTextFile("advInfo");
             Type type = new TypeReference<ResultInfo<AdvInfoBean>>() {
             }.getType();
             ResultInfo<AdvInfoBean> advInfo = JSONObject.parseObject(json, type);
@@ -249,7 +259,7 @@ private void getGoodInfo(){
             @Override
             public void onNext(ResultInfo<AdvInfoBean> advInfoBeanResultInfo) {
                 advInfoBeanResultInfo.setResponse(null);
-                saveToSDCard(MainActivity.this,"advInfo", JSON.toJSONString(advInfoBeanResultInfo));
+                saveToSDCard(MainActivity.this, "advInfo", JSON.toJSONString(advInfoBeanResultInfo));
                 h5page.setText(advInfoBeanResultInfo.getData().getH5page().getButton_txt());
                 Intent intent = new Intent(MainActivity.this, H5page.class);
                 intent.putExtra("url", advInfoBeanResultInfo.getData().getH5page().getUrl());
@@ -278,6 +288,7 @@ private void getGoodInfo(){
 
     String TAG = "aaaa";
 
+
     //检查系统版本是不是最新
     private void CheckVersion() {
         String uri;
@@ -287,18 +298,8 @@ private void getGoodInfo(){
             if (getVersionName().equals(jsonObject.get("version"))) {
                 Toast.makeText(MainActivity.this, "已是最新版本！", Toast.LENGTH_SHORT).show();
             } else {
-                Log.i(TAG, "version" + jsonObject.get("version"));
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle("版本更新")
-                        .setMessage("有新版本可以更新啦~")
-                        .setPositiveButton("立即下载", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Intent viewIntent = new Intent("android.intent.action.VIEW", Uri.parse(uri));
-                                startActivity(viewIntent);//一定要记得从apkName=后面这个位置也要修改包名
-                            }
-                        })
-                        .setNegativeButton("取消", null).create().show();
+                DownLoadDialog downLoadDialog = new DownLoadDialog(this, uri);
+                downLoadDialog.show();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -636,5 +637,5 @@ private void getGoodInfo(){
         client.newCall(request).enqueue(callback);
     }
 
-    private static final MediaType JSON1 = MediaType.parse("application/json; charset=utf-8");
+    private  final MediaType JSON1 = MediaType.parse("application/json; charset=utf-8");
 }
